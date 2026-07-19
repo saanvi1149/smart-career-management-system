@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
+import '../../components/DashboardStyles.css';
 
 function StudentResumes() {
   const [resumes, setResumes] = useState([]);
@@ -60,30 +61,33 @@ function StudentResumes() {
   };
 
   return (
-    <div>
+    <div className="dash-page">
       <h1>My Resumes</h1>
 
-      <div style={{ border: '1px solid #ccc', padding: 20, borderRadius: 8, maxWidth: 500, marginBottom: 30 }}>
+      <div className="dash-card" style={{ maxWidth: 500 }}>
         <h3>✨ Upload Existing Resume (AI Parse)</h3>
         <form onSubmit={handleUploadAndParse}>
-          <input type="file" accept=".pdf" onChange={handleFileChange} style={{ marginBottom: 10 }} />
+          <input type="file" accept=".pdf" onChange={handleFileChange} style={{ marginBottom: 14 }} />
           <br />
-          <button type="submit" disabled={uploading}>
+          <button type="submit" className="dash-btn" disabled={uploading}>
             {uploading ? 'Parsing...' : 'Upload & Parse with AI'}
           </button>
-          {message && <p>{message}</p>}
+          {message && <p className="dash-message">{message}</p>}
         </form>
       </div>
 
-      {resumes.length === 0 && <p>No resumes yet.</p>}
-      <ul>
+      <div className="dash-card">
+        <h3>Saved Resumes</h3>
+        {resumes.length === 0 && <p className="dash-empty">No resumes yet.</p>}
         {resumes.map((r) => (
-          <li key={r.id} style={{ marginBottom: 10 }}>
-            {r.title}{' '}
-            <button onClick={() => handleDownload(r.id, r.title)}>Download PDF</button>
-          </li>
+          <div key={r.id} className="dash-list-item">
+            <span>{r.title}</span>
+            <button className="dash-btn-secondary" onClick={() => handleDownload(r.id, r.title)}>
+              Download PDF
+            </button>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

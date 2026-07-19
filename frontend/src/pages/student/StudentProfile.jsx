@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
+import '../../components/DashboardStyles.css';
 
 function StudentProfile() {
   const [bioText, setBioText] = useState('');

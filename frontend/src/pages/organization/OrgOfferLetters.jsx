@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
+import '../../components/DashboardStyles.css';
 
 function OrgOfferLetters() {
   const [templates, setTemplates] = useState([]);
@@ -51,48 +52,58 @@ function OrgOfferLetters() {
   };
 
   return (
-    <div>
+    <div className="dash-page">
       <h1>Issue Offer Letter</h1>
-      <form onSubmit={handleIssue} style={{ maxWidth: 400, marginBottom: 30 }}>
-        <select value={templateId} onChange={(e) => setTemplateId(e.target.value)} required style={{ width: '100%', marginBottom: 10, padding: 8 }}>
-          <option value="">Select Template</option>
-          {templates.map((t) => (
-            <option key={t.id} value={t.id}>{t.name}</option>
-          ))}
-        </select>
-        <input
-          placeholder="Student Email"
-          value={studentEmail}
-          onChange={(e) => setStudentEmail(e.target.value)}
-          required
-          style={{ width: '100%', marginBottom: 10, padding: 8 }}
-        />
-        <input
-          placeholder="Position"
-          value={position}
-          onChange={(e) => setPosition(e.target.value)}
-          required
-          style={{ width: '100%', marginBottom: 10, padding: 8 }}
-        />
-        <input
-          placeholder="Stipend"
-          value={stipend}
-          onChange={(e) => setStipend(e.target.value)}
-          style={{ width: '100%', marginBottom: 10, padding: 8 }}
-        />
-        <button type="submit">Issue Offer Letter</button>
-        {message && <p>{message}</p>}
-      </form>
 
-      <h3>Issued Offer Letters</h3>
-      <ul>
+      <div className="dash-card" style={{ maxWidth: 450 }}>
+        <form onSubmit={handleIssue}>
+          <select className="dash-select" value={templateId} onChange={(e) => setTemplateId(e.target.value)} required>
+            <option value="">Select Template</option>
+            {templates.map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+          <input
+            className="dash-input"
+            placeholder="Student Email"
+            value={studentEmail}
+            onChange={(e) => setStudentEmail(e.target.value)}
+            required
+          />
+          <input
+            className="dash-input"
+            placeholder="Position"
+            value={position}
+            onChange={(e) => setPosition(e.target.value)}
+            required
+          />
+          <input
+            className="dash-input"
+            placeholder="Stipend"
+            value={stipend}
+            onChange={(e) => setStipend(e.target.value)}
+          />
+          <button type="submit" className="dash-btn">Issue Offer Letter</button>
+          {message && <p className="dash-message">{message}</p>}
+        </form>
+      </div>
+
+      <div className="dash-card">
+        <h3>Issued Offer Letters</h3>
+        {offers.length === 0 && <p className="dash-empty">No offer letters issued yet.</p>}
         {offers.map((o) => (
-          <li key={o.id} style={{ marginBottom: 8 }}>
-            Offer #{o.id} — verification: {o.verification_id}{' '}
-            <button onClick={() => handleDownload(o.id)}>Download PDF</button>
-          </li>
+          <div key={o.id} className="dash-list-item">
+            <span>
+              Offer #{o.id}
+              <br />
+              <span style={{ fontSize: 12, color: '#999' }}>verification: {o.verification_id}</span>
+            </span>
+            <button className="dash-btn-secondary" onClick={() => handleDownload(o.id)}>
+              Download PDF
+            </button>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

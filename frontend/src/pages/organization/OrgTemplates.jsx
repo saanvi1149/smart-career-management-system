@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
+import '../../components/DashboardStyles.css';
 
 function OrgTemplates() {
   const [certTemplates, setCertTemplates] = useState([]);
@@ -41,56 +42,62 @@ function OrgTemplates() {
   };
 
   return (
-    <div>
+    <div className="dash-page">
       <h1>Templates</h1>
 
-      <h3>Certificate Templates</h3>
-      <form onSubmit={handleCreateCertTemplate} style={{ marginBottom: 20 }}>
-        <input
-          placeholder="Template name"
-          value={certName}
-          onChange={(e) => setCertName(e.target.value)}
-          required
-          style={{ marginRight: 10 }}
-        />
-        <input
-          placeholder="Design HTML (e.g. <h1>{{student_name}}</h1>)"
-          value={certHtml}
-          onChange={(e) => setCertHtml(e.target.value)}
-          required
-          style={{ width: 400, marginRight: 10 }}
-        />
-        <button type="submit">Create</button>
-      </form>
-      <ul>
+      <div className="dash-card" style={{ maxWidth: 600 }}>
+        <h3>Certificate Templates</h3>
+        <form onSubmit={handleCreateCertTemplate}>
+          <input
+            className="dash-input"
+            placeholder="Template name"
+            value={certName}
+            onChange={(e) => setCertName(e.target.value)}
+            required
+          />
+          <input
+            className="dash-input"
+            placeholder="Design HTML (e.g. <h1>{{student_name}}</h1>)"
+            value={certHtml}
+            onChange={(e) => setCertHtml(e.target.value)}
+            required
+          />
+          <button type="submit" className="dash-btn">Create</button>
+        </form>
         {certTemplates.map((t) => (
-          <li key={t.id}>{t.name} (id: {t.id})</li>
+          <div key={t.id} className="dash-list-item">
+            <span>{t.name}</span>
+            <span style={{ fontSize: 12, color: '#999' }}>id: {t.id}</span>
+          </div>
         ))}
-      </ul>
+      </div>
 
-      <h3 style={{ marginTop: 30 }}>Offer Letter Templates</h3>
-      <form onSubmit={handleCreateOfferTemplate} style={{ marginBottom: 20 }}>
-        <input
-          placeholder="Template name"
-          value={offerName}
-          onChange={(e) => setOfferName(e.target.value)}
-          required
-          style={{ marginRight: 10 }}
-        />
-        <input
-          placeholder="Design HTML"
-          value={offerHtml}
-          onChange={(e) => setOfferHtml(e.target.value)}
-          required
-          style={{ width: 400, marginRight: 10 }}
-        />
-        <button type="submit">Create</button>
-      </form>
-      <ul>
+      <div className="dash-card" style={{ maxWidth: 600 }}>
+        <h3>Offer Letter Templates</h3>
+        <form onSubmit={handleCreateOfferTemplate}>
+          <input
+            className="dash-input"
+            placeholder="Template name"
+            value={offerName}
+            onChange={(e) => setOfferName(e.target.value)}
+            required
+          />
+          <input
+            className="dash-input"
+            placeholder="Design HTML"
+            value={offerHtml}
+            onChange={(e) => setOfferHtml(e.target.value)}
+            required
+          />
+          <button type="submit" className="dash-btn">Create</button>
+        </form>
         {offerTemplates.map((t) => (
-          <li key={t.id}>{t.name} (id: {t.id})</li>
+          <div key={t.id} className="dash-list-item">
+            <span>{t.name}</span>
+            <span style={{ fontSize: 12, color: '#999' }}>id: {t.id}</span>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

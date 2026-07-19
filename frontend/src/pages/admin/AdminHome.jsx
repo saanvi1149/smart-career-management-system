@@ -1,8 +1,14 @@
+import '../../components/DashboardStyles.css';
+
 function AdminHome() {
   return (
-    <div>
+    <div className="dash-page">
       <h1>Welcome, Super Admin</h1>
-      <p>Use the sidebar to manage organizations and view activity logs.</p>
+      <div className="dash-card">
+        <p style={{ color: '#555', fontSize: 15, lineHeight: 1.6 }}>
+          Use the sidebar to approve organizations and monitor platform activity.
+        </p>
+      </div>
     </div>
   );
 }

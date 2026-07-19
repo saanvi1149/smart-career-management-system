@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
+import '../../components/DashboardStyles.css';
 
 function AdminOrganizations() {
   const [pendingOrgs, setPendingOrgs] = useState([]);
@@ -29,18 +30,24 @@ function AdminOrganizations() {
   };
 
   return (
-    <div>
+    <div className="dash-page">
       <h1>Pending Organizations</h1>
-      {message && <p>{message}</p>}
-      {pendingOrgs.length === 0 && <p>No pending organizations.</p>}
-      <ul>
+      <div className="dash-card">
+        {message && <p className="dash-message">{message}</p>}
+        {pendingOrgs.length === 0 && <p className="dash-empty">No pending organizations.</p>}
         {pendingOrgs.map((org) => (
-          <li key={org.id} style={{ marginBottom: 10 }}>
-            <strong>{org.org_name}</strong> — {org.contact_email}{' '}
-            <button onClick={() => handleApprove(org.id)}>Approve</button>
-          </li>
+          <div key={org.id} className="dash-list-item">
+            <span>
+              <strong>{org.org_name}</strong>
+              <br />
+              <span style={{ fontSize: 12, color: '#999' }}>{org.contact_email}</span>
+            </span>
+            <button className="dash-btn-secondary" onClick={() => handleApprove(org.id)}>
+              Approve
+            </button>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

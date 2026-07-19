@@ -1,8 +1,14 @@
+import '../../components/DashboardStyles.css';
+
 function OrgHome() {
   return (
-    <div>
+    <div className="dash-page">
       <h1>Welcome, Organization</h1>
-      <p>Use the sidebar to manage templates and issue certificates/offer letters.</p>
+      <div className="dash-card">
+        <p style={{ color: '#555', fontSize: 15, lineHeight: 1.6 }}>
+          Use the sidebar to manage certificate/offer letter templates and issue documents to students.
+        </p>
+      </div>
     </div>
   );
 }

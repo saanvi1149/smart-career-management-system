@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/api';
+import '../../components/DashboardStyles.css';
 
 function OrgCertificates() {
   const [templates, setTemplates] = useState([]);
@@ -51,48 +52,58 @@ function OrgCertificates() {
   };
 
   return (
-    <div>
+    <div className="dash-page">
       <h1>Issue Certificate</h1>
-      <form onSubmit={handleIssue} style={{ maxWidth: 400, marginBottom: 30 }}>
-        <select value={templateId} onChange={(e) => setTemplateId(e.target.value)} required style={{ width: '100%', marginBottom: 10, padding: 8 }}>
-          <option value="">Select Template</option>
-          {templates.map((t) => (
-            <option key={t.id} value={t.id}>{t.name}</option>
-          ))}
-        </select>
-        <input
-          placeholder="Student Email"
-          value={studentEmail}
-          onChange={(e) => setStudentEmail(e.target.value)}
-          required
-          style={{ width: '100%', marginBottom: 10, padding: 8 }}
-        />
-        <input
-          placeholder="Course Name"
-          value={courseName}
-          onChange={(e) => setCourseName(e.target.value)}
-          required
-          style={{ width: '100%', marginBottom: 10, padding: 8 }}
-        />
-        <input
-          placeholder="Grade"
-          value={grade}
-          onChange={(e) => setGrade(e.target.value)}
-          style={{ width: '100%', marginBottom: 10, padding: 8 }}
-        />
-        <button type="submit">Issue Certificate</button>
-        {message && <p>{message}</p>}
-      </form>
 
-      <h3>Issued Certificates</h3>
-      <ul>
+      <div className="dash-card" style={{ maxWidth: 450 }}>
+        <form onSubmit={handleIssue}>
+          <select className="dash-select" value={templateId} onChange={(e) => setTemplateId(e.target.value)} required>
+            <option value="">Select Template</option>
+            {templates.map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+          <input
+            className="dash-input"
+            placeholder="Student Email"
+            value={studentEmail}
+            onChange={(e) => setStudentEmail(e.target.value)}
+            required
+          />
+          <input
+            className="dash-input"
+            placeholder="Course Name"
+            value={courseName}
+            onChange={(e) => setCourseName(e.target.value)}
+            required
+          />
+          <input
+            className="dash-input"
+            placeholder="Grade"
+            value={grade}
+            onChange={(e) => setGrade(e.target.value)}
+          />
+          <button type="submit" className="dash-btn">Issue Certificate</button>
+          {message && <p className="dash-message">{message}</p>}
+        </form>
+      </div>
+
+      <div className="dash-card">
+        <h3>Issued Certificates</h3>
+        {certificates.length === 0 && <p className="dash-empty">No certificates issued yet.</p>}
         {certificates.map((c) => (
-          <li key={c.id} style={{ marginBottom: 8 }}>
-            Certificate #{c.id} — verification: {c.verification_id}{' '}
-            <button onClick={() => handleDownload(c.id)}>Download PDF</button>
-          </li>
+          <div key={c.id} className="dash-list-item">
+            <span>
+              Certificate #{c.id}
+              <br />
+              <span style={{ fontSize: 12, color: '#999' }}>verification: {c.verification_id}</span>
+            </span>
+            <button className="dash-btn-secondary" onClick={() => handleDownload(c.id)}>
+              Download PDF
+            </button>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
