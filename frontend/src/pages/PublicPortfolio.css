@@ -1,0 +1,95 @@
+.pp-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #2b1055 0%, #1e1a4d 50%, #0f0c29 100%);
+  padding: 60px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.pp-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 40px;
+}
+
+.pp-header h1 {
+  font-size: 42px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.pp-subtitle {
+  opacity: 0.7;
+  font-size: 15px;
+}
+
+.pp-body {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 700px;
+  width: 100%;
+  height: fit-content;
+}
+
+.pp-section {
+  margin-bottom: 30px;
+}
+
+.pp-section h3 {
+  text-transform: capitalize;
+  color: #2b1055;
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+.pp-bio {
+  color: #333;
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+.pp-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pp-skill-pill {
+  background: #e8e4f8;
+  color: #2b1055;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pp-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pp-card {
+  background: #f7f7fb;
+  padding: 16px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.pp-card p {
+  margin-top: 6px;
+  color: #555;
+}
+
+.pp-muted {
+  color: #999;
+  font-size: 13px;
+}
+
+.pp-notfound {
+  color: white;
+  font-size: 18px;
+  text-align: center;
+  margin-top: 100px;
+}

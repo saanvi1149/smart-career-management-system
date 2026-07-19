@@ -1,0 +1,69 @@
+.pv-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #2b1055 0%, #1e1a4d 50%, #0f0c29 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.pv-card {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 450px;
+  width: 100%;
+}
+
+.pv-badge {
+  display: inline-block;
+  background: #d4f8d4;
+  color: #1a7d1a;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.pv-card h2 {
+  color: #2b1055;
+  margin-bottom: 20px;
+}
+
+.pv-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.pv-label {
+  color: #888;
+  text-transform: capitalize;
+}
+
+.pv-value {
+  color: #222;
+  font-weight: 600;
+  text-align: right;
+}
+
+.pv-divider {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 16px 0;
+}
+
+.pv-invalid {
+  text-align: center;
+}
+
+.pv-invalid h2 {
+  color: #d32f2f;
+}
+
+.pv-invalid p {
+  color: #666;
+  margin-top: 10px;
+}
