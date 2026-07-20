@@ -74,17 +74,21 @@ def register_organization(data: schemas.OrganizationRegister, db: Session = Depe
 
 
 # --- Login (for all roles) ---
+# --- Login (for all roles) ---
 @router.post("/login", response_model=schemas.TokenResponse)
 def login(data: schemas.LoginRequest, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == data.email).first()
     if not user or not auth.verify_password(data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="This account has been deactivated")
+
     token = auth.create_access_token({"sub": str(user.id), "role": user.role.role_name})
+    refresh_token = auth.create_refresh_token({"sub": str(user.id), "role": user.role.role_name})
     log_activity(db, user.id, "User logged in")
 
-    return {"access_token": token, "role": user.role.role_name}
-
+    return {"access_token": token, "refresh_token": refresh_token, "role": user.role.role_name}
 @router.get("/me")
 def get_my_profile(current_user: models.User = Depends(auth.get_current_user)):
     return {
@@ -130,3 +134,21 @@ def approve_organization(
     create_notification(db, org.user_id, f"Your organization '{org.org_name}' has been approved!")
 
     return {"message": f"Organization '{org.org_name}' approved successfully"}
+
+@router.post("/refresh")
+def refresh_access_token(payload: dict, db: Session = Depends(get_db)):
+    refresh_token = payload.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(status_code=400, detail="Refresh token required")
+
+    decoded = auth.decode_access_token(refresh_token)
+    if not decoded or decoded.get("type") != "refresh":
+        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+
+    user_id = decoded.get("sub")
+    user = db.query(models.User).filter(models.User.id == int(user_id)).first()
+    if not user or not user.is_active:
+        raise HTTPException(status_code=401, detail="User not found or deactivated")
+
+    new_access_token = auth.create_access_token({"sub": str(user.id), "role": user.role.role_name})
+    return {"access_token": new_access_token, "role": user.role.role_name}

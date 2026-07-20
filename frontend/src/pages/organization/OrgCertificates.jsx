@@ -10,6 +10,8 @@ function OrgCertificates() {
   const [courseName, setCourseName] = useState('');
   const [grade, setGrade] = useState('');
   const [message, setMessage] = useState('');
+  const [bulkEmails, setBulkEmails] = useState('');
+  const [bulkMessage, setBulkMessage] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -38,6 +40,24 @@ function OrgCertificates() {
       fetchData();
     } catch (err) {
       setMessage(err.response?.data?.detail || 'Failed to issue certificate');
+    }
+  };
+
+  const handleBulkIssue = async (e) => {
+    e.preventDefault();
+    setBulkMessage('');
+    try {
+      const emails = bulkEmails.split(',').map((em) => em.trim()).filter(Boolean);
+      const res = await api.post('/organizations/certificates/bulk', {
+        template_id: parseInt(templateId),
+        student_emails: emails,
+        certificate_data: { course_name: courseName, grade: grade, date: new Date().toISOString().split('T')[0] },
+      });
+      setBulkMessage(`Issued: ${res.data.issued.length}, Failed: ${res.data.failed.length}`);
+      setBulkEmails('');
+      fetchData();
+    } catch (err) {
+      setBulkMessage(err.response?.data?.detail || 'Bulk issue failed');
     }
   };
 
@@ -85,6 +105,24 @@ function OrgCertificates() {
           />
           <button type="submit" className="dash-btn">Issue Certificate</button>
           {message && <p className="dash-message">{message}</p>}
+        </form>
+      </div>
+
+      <div className="dash-card" style={{ maxWidth: 450 }}>
+        <h3>📦 Bulk Issue Certificate</h3>
+        <p style={{ fontSize: 12, color: '#999', marginBottom: 10 }}>
+          Uses the Template, Course Name, and Grade selected above.
+        </p>
+        <form onSubmit={handleBulkIssue}>
+          <input
+            className="dash-input"
+            placeholder="Student emails, comma separated"
+            value={bulkEmails}
+            onChange={(e) => setBulkEmails(e.target.value)}
+            required
+          />
+          <button type="submit" className="dash-btn">Issue to All</button>
+          {bulkMessage && <p className="dash-message">{bulkMessage}</p>}
         </form>
       </div>
 

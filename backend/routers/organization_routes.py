@@ -9,6 +9,7 @@ from pdf_generator import generate_certificate_pdf
 from fastapi.responses import FileResponse
 import os
 from utils import log_activity, create_notification
+from fastapi import UploadFile, File
 
 router = APIRouter(prefix="/organizations", tags=["Organization"])
 
@@ -218,7 +219,7 @@ def download_certificate_pdf(
 
     os.makedirs("generated_pdfs", exist_ok=True)
     output_path = f"generated_pdfs/certificate_{cert.id}.pdf"
-    generate_certificate_pdf(template.design_html, fill_data, output_path)
+    generate_certificate_pdf(template.design_html, fill_data, output_path, org.signature_url)
 
     cert.pdf_url = output_path
     db.commit()
@@ -246,9 +247,140 @@ def download_offer_letter_pdf(
 
     os.makedirs("generated_pdfs", exist_ok=True)
     output_path = f"generated_pdfs/offer_{offer.id}.pdf"
-    generate_certificate_pdf(template.design_html, fill_data, output_path)
+    generate_certificate_pdf(template.design_html, fill_data, output_path, org.signature_url)
 
     offer.pdf_url = output_path
     db.commit()
 
     return FileResponse(output_path, media_type="application/pdf", filename=f"offer_letter_{offer.id}.pdf")
+
+@router.get("/profile")
+def get_org_profile(org: models.Organization = Depends(get_current_org)):
+    return {
+        "id": org.id,
+        "org_name": org.org_name,
+        "org_type": org.org_type,
+        "contact_email": org.contact_email,
+        "status": org.status,
+    }
+
+
+@router.put("/profile")
+def update_org_profile(
+    data: schemas.OrgProfileUpdate,
+    db: Session = Depends(get_db),
+    org: models.Organization = Depends(get_current_org)
+):
+    org.org_name = data.org_name
+    org.org_type = data.org_type
+    org.contact_email = data.contact_email
+    db.commit()
+    return {"message": "Organization profile updated successfully"}
+
+@router.get("/student-records")
+def get_student_records(
+    db: Session = Depends(get_db),
+    org: models.Organization = Depends(get_current_org)
+):
+    cert_student_ids = db.query(models.Certificate.student_id).filter(
+        models.Certificate.issued_by == org.id
+    ).distinct()
+    offer_student_ids = db.query(models.OfferLetter.student_id).filter(
+        models.OfferLetter.issued_by == org.id
+    ).distinct()
+
+    student_ids = set([r[0] for r in cert_student_ids] + [r[0] for r in offer_student_ids])
+
+    records = []
+    for sid in student_ids:
+        student = db.query(models.Student).filter(models.Student.id == sid).first()
+        if not student:
+            continue
+        cert_count = db.query(models.Certificate).filter(
+            models.Certificate.student_id == sid,
+            models.Certificate.issued_by == org.id
+        ).count()
+        offer_count = db.query(models.OfferLetter).filter(
+            models.OfferLetter.student_id == sid,
+            models.OfferLetter.issued_by == org.id
+        ).count()
+        records.append({
+            "student_id": student.id,
+            "full_name": student.full_name,
+            "university": student.university,
+            "certificates_issued": cert_count,
+            "offer_letters_issued": offer_count,
+        })
+
+    return records
+
+@router.post("/certificates/bulk")
+def issue_bulk_certificates(
+    data: schemas.BulkCertificateCreate,
+    db: Session = Depends(get_db),
+    org: models.Organization = Depends(get_current_org)
+):
+    template = db.query(models.CertificateTemplate).filter(
+        models.CertificateTemplate.id == data.template_id,
+        models.CertificateTemplate.organization_id == org.id
+    ).first()
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    issued = []
+    failed = []
+
+    for email in data.student_emails:
+        student_user = db.query(models.User).filter(models.User.email == email).first()
+        if not student_user:
+            failed.append({"email": email, "reason": "User not found"})
+            continue
+
+        student = db.query(models.Student).filter(models.Student.user_id == student_user.id).first()
+        if not student:
+            failed.append({"email": email, "reason": "Student record not found"})
+            continue
+
+        new_cert = models.Certificate(
+            template_id=template.id,
+            student_id=student.id,
+            issued_by=org.id,
+            certificate_data=data.certificate_data
+        )
+        db.add(new_cert)
+        db.commit()
+        db.refresh(new_cert)
+
+        qr_path = generate_qr_code(new_cert.verification_id)
+        verification = models.DocumentVerification(
+            document_type="certificate",
+            document_id=new_cert.id,
+            verification_id=new_cert.verification_id,
+            qr_code_url=qr_path
+        )
+        db.add(verification)
+        db.commit()
+
+        create_notification(db, student_user.id, f"You received a new certificate from {org.org_name}!")
+        issued.append({"email": email, "certificate_id": new_cert.id})
+
+    log_activity(db, org.user_id, "Bulk issued certificates", {"count": len(issued), "template_id": template.id})
+
+    return {"issued": issued, "failed": failed}
+
+@router.post("/signature")
+async def upload_signature(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    org: models.Organization = Depends(get_current_org)
+):
+    os.makedirs("signatures", exist_ok=True)
+    file_path = f"signatures/org_{org.id}_signature.png"
+
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+
+    org.signature_url = file_path
+    db.commit()
+
+    return {"message": "Signature uploaded successfully", "signature_url": file_path}

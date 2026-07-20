@@ -27,6 +27,7 @@ class LoginRequest(BaseModel):
 # --- What we send back after successful login ---
 class TokenResponse(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
     role: str
 
@@ -187,3 +188,13 @@ class ActivityLogResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class OrgProfileUpdate(BaseModel):
+    org_name: str
+    org_type: Optional[str] = None
+    contact_email: Optional[str] = None
+
+class BulkCertificateCreate(BaseModel):
+    template_id: int
+    student_emails: List[str]
+    certificate_data: Dict[str, Any]

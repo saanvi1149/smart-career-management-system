@@ -8,6 +8,15 @@ function StudentResumes() {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
 
+  const [manualTitle, setManualTitle] = useState('');
+  const [degree, setDegree] = useState('');
+  const [college, setCollege] = useState('');
+  const [year, setYear] = useState('');
+  const [skillsText, setSkillsText] = useState('');
+  const [projectName, setProjectName] = useState('');
+  const [projectDesc, setProjectDesc] = useState('');
+  const [manualMessage, setManualMessage] = useState('');
+
   useEffect(() => {
     fetchResumes();
   }, []);
@@ -29,6 +38,11 @@ function StudentResumes() {
     link.setAttribute('download', `${title}.pdf`);
     document.body.appendChild(link);
     link.click();
+  };
+
+  const handleDelete = async (id) => {
+    await api.delete(`/students/resumes/${id}`);
+    fetchResumes();
   };
 
   const handleFileChange = (e) => {
@@ -60,9 +74,51 @@ function StudentResumes() {
     setUploading(false);
   };
 
+  const handleManualCreate = async (e) => {
+    e.preventDefault();
+    setManualMessage('');
+    try {
+      await api.post('/students/resumes', {
+        title: manualTitle,
+        template_id: 'modern',
+        content: {
+          education: [{ degree, college, year }],
+          skills: skillsText.split(',').map((s) => s.trim()).filter(Boolean),
+          projects: [{ name: projectName, description: projectDesc }],
+        },
+      });
+      setManualMessage('Resume created successfully!');
+      setManualTitle('');
+      setDegree('');
+      setCollege('');
+      setYear('');
+      setSkillsText('');
+      setProjectName('');
+      setProjectDesc('');
+      fetchResumes();
+    } catch (err) {
+      setManualMessage('Failed to create resume');
+    }
+  };
+
   return (
     <div className="dash-page">
       <h1>My Resumes</h1>
+
+      <div className="dash-card" style={{ maxWidth: 500 }}>
+        <h3>📝 Build Resume Manually</h3>
+        <form onSubmit={handleManualCreate}>
+          <input className="dash-input" placeholder="Resume Title" value={manualTitle} onChange={(e) => setManualTitle(e.target.value)} required />
+          <input className="dash-input" placeholder="Degree (e.g. BTech CS)" value={degree} onChange={(e) => setDegree(e.target.value)} />
+          <input className="dash-input" placeholder="College/University" value={college} onChange={(e) => setCollege(e.target.value)} />
+          <input className="dash-input" placeholder="Year" value={year} onChange={(e) => setYear(e.target.value)} />
+          <input className="dash-input" placeholder="Skills (comma separated)" value={skillsText} onChange={(e) => setSkillsText(e.target.value)} />
+          <input className="dash-input" placeholder="Project Name" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
+          <input className="dash-input" placeholder="Project Description" value={projectDesc} onChange={(e) => setProjectDesc(e.target.value)} />
+          <button type="submit" className="dash-btn">Create Resume</button>
+          {manualMessage && <p className="dash-message">{manualMessage}</p>}
+        </form>
+      </div>
 
       <div className="dash-card" style={{ maxWidth: 500 }}>
         <h3>✨ Upload Existing Resume (AI Parse)</h3>
@@ -82,9 +138,14 @@ function StudentResumes() {
         {resumes.map((r) => (
           <div key={r.id} className="dash-list-item">
             <span>{r.title}</span>
-            <button className="dash-btn-secondary" onClick={() => handleDownload(r.id, r.title)}>
-              Download PDF
-            </button>
+            <div>
+              <button className="dash-btn-secondary" onClick={() => handleDownload(r.id, r.title)}>
+                Download PDF
+              </button>
+              <button className="dash-btn-secondary" onClick={() => handleDelete(r.id)} style={{ background: '#ffe4e4', color: '#c0392b' }}>
+                Delete
+              </button>
+            </div>
           </div>
         ))}
       </div>

@@ -57,6 +57,7 @@ class Organization(Base):
     status = Column(Enum(StatusEnum), default=StatusEnum.pending)
     approved_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
+    signature_url = Column(String(255), nullable=True)
 
     user = relationship("User", foreign_keys=[user_id])
 
