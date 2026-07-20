@@ -134,7 +134,7 @@ def fill_template(design_html: str, data: dict) -> str:
     return filled
 
 
-def generate_certificate_pdf(design_html: str, data: dict, output_path: str, signature_path: str = None) -> str:
+def generate_certificate_pdf(design_html: str, data: dict, output_path: str, signature_path: str = None, qr_path: str = None, verification_id: str = None) -> str:
     filled_html = fill_template(design_html, data)
 
     full_html = f"""
@@ -153,26 +153,36 @@ def generate_certificate_pdf(design_html: str, data: dict, output_path: str, sig
     with open(output_path, "wb") as f:
         pisa.CreatePDF(full_html, dest=f)
 
-    # Stamp signature onto the PDF if provided
-    if signature_path and os.path.exists(signature_path):
-        stamp_signature(output_path, signature_path)
+    if signature_path or qr_path:
+        stamp_signature_and_verification(output_path, signature_path, qr_path, verification_id)
 
     return output_path
 
-
-def stamp_signature(pdf_path: str, signature_path: str):
-    """Overlay a signature image onto the bottom of the first page of an existing PDF."""
+def stamp_signature_and_verification(pdf_path: str, signature_path: str = None, qr_path: str = None, verification_id: str = None):
+    """Overlay signature and/or QR code + verification ID onto the bottom of the first page of an existing PDF."""
     from reportlab.pdfgen import canvas as sig_canvas
     from PyPDF2 import PdfReader, PdfWriter
     import io
 
-    # Create an overlay PDF with just the signature image
     packet = io.BytesIO()
     c = sig_canvas.Canvas(packet, pagesize=A4)
     width, height = A4
-    c.drawImage(signature_path, width - 3 * inch, 1 * inch, width=1.5 * inch, height=0.7 * inch, mask='auto')
-    c.setFont("Helvetica", 8)
-    c.drawString(width - 3 * inch, 0.85 * inch, "Authorized Signature")
+
+    # Signature (bottom right)
+    if signature_path and os.path.exists(signature_path):
+        c.drawImage(signature_path, width - 3 * inch, 1 * inch, width=1.5 * inch, height=0.7 * inch, mask='auto')
+        c.setFont("Helvetica", 8)
+        c.drawString(width - 3 * inch, 0.85 * inch, "Authorized Signature")
+
+    # QR code + verification ID (bottom left)
+    if qr_path and os.path.exists(qr_path):
+        c.drawImage(qr_path, 1 * inch, 0.7 * inch, width=1 * inch, height=1 * inch, mask='auto')
+
+    if verification_id:
+        c.setFont("Helvetica", 7)
+        c.drawString(1 * inch, 0.6 * inch, "Scan to verify")
+        c.drawString(1 * inch, 0.5 * inch, f"ID: {verification_id}")
+
     c.save()
     packet.seek(0)
 

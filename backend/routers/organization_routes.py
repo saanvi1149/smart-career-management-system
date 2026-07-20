@@ -213,19 +213,27 @@ def download_certificate_pdf(
 
     student = db.query(models.Student).filter(models.Student.id == cert.student_id).first()
     template = db.query(models.CertificateTemplate).filter(models.CertificateTemplate.id == cert.template_id).first()
+    verification = db.query(models.DocumentVerification).filter(
+        models.DocumentVerification.verification_id == cert.verification_id
+    ).first()
 
-    # Merge student name into the data dict for placeholder filling
     fill_data = {**cert.certificate_data, "student_name": student.full_name}
 
     os.makedirs("generated_pdfs", exist_ok=True)
     output_path = f"generated_pdfs/certificate_{cert.id}.pdf"
-    generate_certificate_pdf(template.design_html, fill_data, output_path, org.signature_url)
+    generate_certificate_pdf(
+        template.design_html,
+        fill_data,
+        output_path,
+        org.signature_url,
+        verification.qr_code_url if verification else None,
+        cert.verification_id
+    )
 
     cert.pdf_url = output_path
     db.commit()
 
     return FileResponse(output_path, media_type="application/pdf", filename=f"certificate_{cert.id}.pdf")
-
 
 @router.get("/offer-letters/{offer_id}/download")
 def download_offer_letter_pdf(
@@ -242,18 +250,27 @@ def download_offer_letter_pdf(
 
     student = db.query(models.Student).filter(models.Student.id == offer.student_id).first()
     template = db.query(models.OfferLetterTemplate).filter(models.OfferLetterTemplate.id == offer.template_id).first()
+    verification = db.query(models.DocumentVerification).filter(
+        models.DocumentVerification.verification_id == offer.verification_id
+    ).first()
 
     fill_data = {**offer.offer_data, "student_name": student.full_name}
 
     os.makedirs("generated_pdfs", exist_ok=True)
     output_path = f"generated_pdfs/offer_{offer.id}.pdf"
-    generate_certificate_pdf(template.design_html, fill_data, output_path, org.signature_url)
+    generate_certificate_pdf(
+        template.design_html,
+        fill_data,
+        output_path,
+        org.signature_url,
+        verification.qr_code_url if verification else None,
+        offer.verification_id
+    )
 
     offer.pdf_url = output_path
     db.commit()
 
     return FileResponse(output_path, media_type="application/pdf", filename=f"offer_letter_{offer.id}.pdf")
-
 @router.get("/profile")
 def get_org_profile(org: models.Organization = Depends(get_current_org)):
     return {
