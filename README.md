@@ -18,3 +18,6 @@ An AI-powered, full-stack platform for managing career documents — students bu
 - **Frontend:** React (Vite), React Router, Axios
 
 ## Project Structure
+SCMS/
+├── backend/ # FastAPI backend - models, routers, AI integration, PDF/QR generation
+└── frontend/ # React frontend - student, organization, and admin dashboards, public pages
